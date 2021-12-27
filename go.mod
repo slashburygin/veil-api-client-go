@@ -1,3 +1,3 @@
-module github.com/hashicorp-demoapp/hashicups-client-go
+module gitlab.bazalt.team/dev/veil-api-client-go
 
 go 1.13

@@ -1,4 +1,4 @@
-package hashicups
+package veil_api_client_go
 
 import (
 	"encoding/json"
