@@ -1,3 +1,7 @@
-module gitlab.bazalt.team/dev/veil-api-client-go
+module veil-api-go
 
-go 1.13
+go 1.16
+
+require (
+	github.com/google/uuid v1.3.0
+)

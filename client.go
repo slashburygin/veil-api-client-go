@@ -1,79 +1,111 @@
-package veil_api_client_go
+package veil_api_go
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
-	"time"
 )
 
-// HostURL - Default Hashicups URL
-const HostURL string = "http://localhost:19090"
+// Client Interface of Client for mocking data receiving in tests
+type Client interface {
+	ExecuteRequest(method, url string, body []byte, object interface{}) (*http.Response, error)
+}
 
-// Client -
-type Client struct {
-	HostURL    string
-	HTTPClient *http.Client
+type WebClient struct {
 	Token      string
-	Auth       AuthStruct
+	HTTPClient *http.Client
+
+	// TODO Change to type url
+	BaseURL string
+
+	// Services which is used for accessing API
+	Domain   *DomainService
+	Node     *NodeService
+	DataPool *DataPoolService
+	Vdisk    *VdiskService
+	Iso      *IsoService
+	Task     *TaskService
 }
 
-// AuthStruct -
-type AuthStruct struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+type Error struct {
+	Error string `json:"error,omitempty"`
+	Field string `json:"field,omitempty"`
 }
 
-// AuthResponse -
-type AuthResponse struct {
-	UserID   int    `json:"user_id`
-	Username string `json:"username`
-	Token    string `json:"token"`
-}
-
-// NewClient -
-func NewClient(host, username, password *string) (*Client, error) {
-	c := Client{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		// Default Hashicups URL
-		HostURL: HostURL,
-		Auth: AuthStruct{
-			Username: *username,
-			Password: *password,
-		},
+// NewClient Web client creating
+func NewClient(apiUrl string, token string) *WebClient {
+	// TODO Maybe it will be better to check if token is empty
+	if apiUrl == "" {
+		apiUrl = GetBaseUrl()
+	}
+	if token == "" {
+		token = GetToken()
+	}
+	client := &WebClient{
+		Token:      token,
+		HTTPClient: new(http.Client),
+		BaseURL:    apiUrl,
 	}
 
-	if host != nil {
-		c.HostURL = *host
-	}
+	// TODO Maybe it will be better to add account checking here via token, to be sure that token is valid and user exists
+	// Passing client to all services for easy client mocking in future and not passing it to every function
+	client.Domain = &DomainService{client}
+	client.Node = &NodeService{client}
+	client.DataPool = &DataPoolService{client}
+	client.Vdisk = &VdiskService{client}
+	client.Iso = &IsoService{client}
+	client.Task = &TaskService{client}
+	return client
 
-	ar, err := c.SignIn()
+}
+
+// ExecuteRequest Executing HTTP Request (receiving info from API)
+func (client *WebClient) ExecuteRequest(method string, url string, body []byte, object interface{}) (*http.Response, error) {
+	req, err := http.NewRequest(method, fmt.Sprint(client.BaseURL, url), bytes.NewBuffer(body))
 	if err != nil {
-		return nil, err
+		return new(http.Response), err
 	}
 
-	c.Token = ar.Token
+	req.Header.Set("Authorization", "jwt "+client.Token)
+	req.Header.Set("Content-Type", "application/json;charset=utf-8")
 
-	return &c, nil
-}
-
-func (c *Client) doRequest(req *http.Request) ([]byte, error) {
-	req.Header.Set("Authorization", c.Token)
-
-	res, err := c.HTTPClient.Do(req)
+	res, err := client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
+	// Cloning response body for future using
+	buf, _ := ioutil.ReadAll(res.Body)
+	reader := ioutil.NopCloser(bytes.NewBuffer(buf))
+	res.Body = ioutil.NopCloser(bytes.NewBuffer(buf))
+
+	if !IsSuccess(res.StatusCode) {
+		response := new(ErrorResponse)
+		err := json.NewDecoder(reader).Decode(response)
+		if err != nil && err != io.EOF {
+			log.Println(err)
+			return res, err
+		} else {
+			errMsg := fmt.Sprintf("not successful status code: %d, detail: %s on url %s %s", res.StatusCode, response.Errors[0].MsgKey, method, url)
+			return res, errors.New(errMsg)
+		}
+
+	}
+	if object != nil && (res.StatusCode == 200 || res.StatusCode == 202) {
+		err := json.NewDecoder(reader).Decode(object)
+
+		// EOF means empty response body, this error is not needed
+		if err != nil && err != io.EOF {
+			log.Println(err)
+			return res, err
+		}
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
-	}
-
-	return body, err
+	return res, nil
 }
