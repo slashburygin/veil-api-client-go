@@ -1,11 +1,11 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"testing"
 )
 
-func Test_VdiskCreate(t *testing.T) {
-	client := NewClient("", "")
+func Test_VdiskCreateSync(t *testing.T) {
+	client := NewClient("", "", false)
 	dpResponse, _, err := client.DataPool.List()
 	if err != nil {
 		t.Error(err)
@@ -54,7 +54,7 @@ func Test_VdiskCreate(t *testing.T) {
 }
 
 func Test_VdiskCreateAsync(t *testing.T) {
-	client := NewClient("", "")
+	client := NewClient("", "", false)
 	dpResponse, _, err := client.DataPool.List()
 	if err != nil {
 		t.Error(err)

@@ -1,4 +1,4 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"net/http"

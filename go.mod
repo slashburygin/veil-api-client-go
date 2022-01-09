@@ -1,4 +1,4 @@
-module veil-api-go
+module veil-api-client-go
 
 go 1.16
 

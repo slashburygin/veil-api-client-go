@@ -1,4 +1,4 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"fmt"
@@ -8,6 +8,9 @@ import (
 )
 
 const baseTaskUrl string = "/api/tasks/"
+
+// TaskStatusCheckInterval - time between async checks in seconds
+const TaskStatusCheckInterval = 1
 
 type TaskService struct {
 	client Client
@@ -98,7 +101,7 @@ func WaitTaskReady(uuid string, blocked bool, timeout int, panicTimeout bool) *T
 	if timeout == 0 {
 		timeout = 180
 	}
-	client := NewClient("", "")
+	client := NewClient("", "", false)
 	task, _, _ := client.Task.Get(uuid)
 	if task.Status != TaskStatus.InProgress {
 		return task
@@ -107,7 +110,7 @@ func WaitTaskReady(uuid string, blocked bool, timeout int, panicTimeout bool) *T
 		for true {
 			task, _, _ := client.Task.Get(uuid)
 			if task.Status != TaskStatus.InProgress {
-				time.Sleep(time.Second)
+				time.Sleep(time.Second * TaskStatusCheckInterval)
 				task, _, _ := client.Task.Get(uuid)
 				return task
 			}

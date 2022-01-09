@@ -1,11 +1,11 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"testing"
 )
 
-func TestIsoService_List_Get(t *testing.T) {
-	client := NewClient("", "")
+func Test_IsoListGet(t *testing.T) {
+	client := NewClient("", "", false)
 	response, _, err := client.Iso.List()
 	if err != nil {
 		t.Error(err)
@@ -29,9 +29,9 @@ func TestIsoService_List_Get(t *testing.T) {
 
 }
 
-func TestIsoService_Upload(t *testing.T) {
+func Test_IsoUpload(t *testing.T) {
 	t.SkipNow()
-	client := NewClient("", "")
+	client := NewClient("", "", false)
 	response, _, err := client.DataPool.List()
 	if err != nil {
 		t.Error(err)

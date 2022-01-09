@@ -1,11 +1,11 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"testing"
 )
 
-func TestNodeService_List_Get(t *testing.T) {
-	client := NewClient("", "")
+func Test_NodeListGet(t *testing.T) {
+	client := NewClient("", "", false)
 	response, _, err := client.Node.List()
 	if err != nil {
 		t.Error(err)

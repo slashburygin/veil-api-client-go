@@ -1,12 +1,12 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"testing"
 )
 
-func TestDataPoolService_List_Get(t *testing.T) {
+func Test_DataPoolListGet(t *testing.T) {
 
-	client := NewClient("", "")
+	client := NewClient("", "", false)
 	response, _, err := client.DataPool.List()
 	if err != nil {
 		t.Error(err)

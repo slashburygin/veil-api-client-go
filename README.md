@@ -1,38 +1,45 @@
-# veil-api-go
+# veil-api-client-go
 
-veil-api-go is a Go client library for accessing the [ECP VeiL REST API](https://veil.mashtab.org/docs/latest/api/).
+veil-api-client-go is a Go client library for accessing the [ECP VeiL REST API](https://veil.mashtab.org/docs/latest/api/).
+
+veil-api-client-go, - это клиентская библиотека на Go для доступа к [ECP VeiL REST API](https://veil.mashtab.org/docs/latest/api/).
 
 ## Использование
 
 ```
-import "github.com/jsc-masshtab/veil-api-go"
+require (
+    github.com/jsc-masshtab/veil-api-client-go
+)
 ```
 
-First step is constructing ECP VeiL client which allows to use API services.
-You can generate token in [ECP VeiL Panel](https://veil.mashtab.org/docs/latest/base/operator_guide/security/users/#_11).
+Токен интеграции можно сгенерировать в [интерфейсе ECP VeiL](https://veil.mashtab.org/docs/latest/base/operator_guide/security/users/#_11).
 
 ```
-client := NewClient("token should be here")
-account, _, err := client.Account.Get()
+// For example 
+apiUrl := "http://192.168.11.105"
+token := "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1NiwidXNlcm5hbWUiOiJidXIiLCJleHAiOjE5NTU0Mjc5OTEsInNzbyI6ZmFsc2UsIm9yaWdfaWF0IjoxNjQwOTMxOTkxfQ.BCPJi1hE_uvlv_sCjLYwGGq2qKJU8dbR9UUC5Cy79AA"
+client := NewClient(apiUrl, token, false)
+response, _, err := client.DataPool.List()
 ```
 
-Some operations with scalets can be started both sync and async.
-
+Некоторые операции могут быть выполнены синхронно и асинхронно
 ```
-// Second argument is "wait" which expects boolean value
-// true - if you want to wait until the end of operation
-// false - if you want this operation to be handled in background
-client := NewClient("token should be here")
-scalet, _, err := client.Scalet.Rebuild(11111, true)
+// Последний аргумент asynced булевый
+// true - для ожидания завершения операции
+// false - если не нужно ждать завершения
+client := NewClient(apiUrl, token, false)
+vdisk, _, err := client.Vdisk.Create(NameGenerator("vdisk"), false, firstDp.Id, 0.1, true)
 ```
 
-## Tests
+## Тесты
 
-You can run tests which make requests straightly to ECP VeiL API.
-For now they can't be run together. Run specific test if you want to test some method.
-
+Запуск отдельных тестов:
 ```bash
-$ go test -v github.com/jsc-masshtab/veil-api-go -run TestDomainService_List
+$ go test -v github.com/jsc-masshtab/veil-api-client-go -run Test_DomainList
 ```
 
-For convenience, you can use "VEIL_API_TOKEN" env for not passing token to every test.
+Для удобства можно использовать "VEIL_API_TOKEN" и "VEIL_API_URL" переменные окружения и передавать пустые строки в NewClient.
+```sh
+export VEIL_API_URL="http://192.168.11.105"
+export VEIL_API_TOKEN="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1NiwidXNlcm5hbWUiOiJidXIiLCJleHAiOjE5NTU0Mjc5OTEsInNzbyI6ZmFsc2UsIm9yaWdfaWF0IjoxNjQwOTMxOTkxfQ.BCPJi1hE_uvlv_sCjLYwGGq2qKJU8dbR9UUC5Cy79AA"
+```

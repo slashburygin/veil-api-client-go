@@ -1,11 +1,11 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"testing"
 )
 
 func TestTask(t *testing.T) {
-	client := NewClient("", "")
+	client := NewClient("", "", false)
 	response, _, err := client.Task.List()
 	if err != nil {
 		t.Error(err)

@@ -1,7 +1,8 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -38,17 +39,23 @@ type Error struct {
 }
 
 // NewClient Web client creating
-func NewClient(apiUrl string, token string) *WebClient {
-	// TODO Maybe it will be better to check if token is empty
+func NewClient(apiUrl string, token string, insecure bool) *WebClient {
 	if apiUrl == "" {
-		apiUrl = GetBaseUrl()
+		apiUrl = GetEnvUrl()
 	}
 	if token == "" {
-		token = GetToken()
+		token = GetEnvToken()
 	}
+	tlsConf := &tls.Config{InsecureSkipVerify: insecure}
+	tr := &http.Transport{
+		TLSClientConfig:    tlsConf,
+		DisableCompression: true,
+		Proxy:              nil,
+	}
+	hclient := &http.Client{Transport: tr}
 	client := &WebClient{
 		Token:      token,
-		HTTPClient: new(http.Client),
+		HTTPClient: hclient,
 		BaseURL:    apiUrl,
 	}
 

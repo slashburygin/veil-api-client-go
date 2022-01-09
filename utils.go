@@ -1,4 +1,4 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func GetToken() string {
+func GetEnvToken() string {
 	token := os.Getenv("VEIL_API_TOKEN")
 	if token == "" {
 		token := "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1NiwidXNlcm5hbWUiOiJidXIiLCJleHAiOjE5NTU0Mjc5OTEsInNzbyI6ZmFsc2UsIm9yaWdfaWF0IjoxNjQwOTMxOTkxfQ.BCPJi1hE_uvlv_sCjLYwGGq2qKJU8dbR9UUC5Cy79AA"
@@ -18,7 +18,7 @@ func GetToken() string {
 	return token
 }
 
-func GetBaseUrl() string {
+func GetEnvUrl() string {
 	url := os.Getenv("VEIL_API_URL")
 	if url == "" {
 		url := "http://192.168.11.105"

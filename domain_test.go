@@ -1,4 +1,4 @@
-package veil_api_go
+package veil_api_client_go
 
 import (
 	"github.com/google/uuid"
@@ -8,8 +8,8 @@ import (
 var TestDomainName = NameGenerator("domain")
 var TestDomainID = uuid.NewString()
 
-func TestDomainService_List(t *testing.T) {
-	client := NewClient("", "")
+func Test_DomainList(t *testing.T) {
+	client := NewClient("", "", false)
 	_, _, err := client.Domain.List()
 	if err != nil {
 		t.Error(err)
@@ -20,8 +20,8 @@ func TestDomainService_List(t *testing.T) {
 
 }
 
-func TestDomainService_Create(t *testing.T) {
-	client := NewClient("", "")
+func Test_DomainCreate(t *testing.T) {
+	client := NewClient("", "", false)
 	domain, _, err := client.Domain.Create(TestDomainName, TestDomainID)
 	if err != nil {
 		t.Error(err)
@@ -37,8 +37,8 @@ func TestDomainService_Create(t *testing.T) {
 
 }
 
-func TestDomainService_Get(t *testing.T) {
-	client := NewClient("", "")
+func Test_DomainGet(t *testing.T) {
+	client := NewClient("", "", false)
 	domain, _, err := client.Domain.Get(TestDomainID)
 	if err != nil {
 		t.Error(err)
@@ -54,8 +54,8 @@ func TestDomainService_Get(t *testing.T) {
 
 }
 
-func TestDomainService_Update(t *testing.T) {
-	client := NewClient("", "")
+func Test_DomainUpdate(t *testing.T) {
+	client := NewClient("", "", false)
 	domain, _, err := client.Domain.Update(TestDomainID, "test")
 	if err != nil {
 		t.Error(err)
@@ -71,8 +71,8 @@ func TestDomainService_Update(t *testing.T) {
 
 }
 
-func TestDomainService_Remove(t *testing.T) {
-	client := NewClient("", "")
+func Test_DomainRemove(t *testing.T) {
+	client := NewClient("", "", false)
 	status, _, err := client.Domain.Remove(TestDomainID)
 	if err != nil {
 		t.Error(err)
