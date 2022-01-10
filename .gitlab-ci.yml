@@ -1,9 +1,9 @@
-image: golang:1.17
+image: golang:latest
 
 variables:
   BIN_NAME: veil-api-client-go
   ARTIFACTS_DIR: artifacts
-  GO_PROJECT: http://192.168.14.215/dev/veil-api-client-go
+  GO_PROJECT: http://gitlab.bazalt.team/dev/veil-api-client-go
 
 stages:
   - build
