@@ -72,7 +72,13 @@ type VdisksResponse struct {
 	Results []VdiskObjectsList `json:"results,omitempty"`
 }
 
-func (d *VdiskService) List(queryParams map[string]string) (*VdisksResponse, *http.Response, error) {
+func (d *VdiskService) List() (*VdisksResponse, *http.Response, error) {
+	response := new(VdisksResponse)
+	res, err := d.client.ExecuteRequest("GET", baseVdiskUrl, []byte{}, response)
+	return response, res, err
+}
+
+func (d *VdiskService) ListParams(queryParams map[string]string) (*VdisksResponse, *http.Response, error) {
 	listUrl := baseVdiskUrl
 	if len(queryParams) != 0 {
 		params := url.Values{}

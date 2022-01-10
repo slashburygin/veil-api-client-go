@@ -1,6 +1,7 @@
 package veil_api_client_go
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -8,21 +9,11 @@ func Test_DataPoolListGet(t *testing.T) {
 
 	client := NewClient("", "", false)
 	response, _, err := client.DataPool.List()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.Nil(t, err)
 	for _, v := range response.Results {
 		entity, _, err := client.DataPool.Get(v.Id)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-
-		if entity.Id == "" {
-			t.Error("DataPool Id can not be empty")
-			return
-		}
+		assert.Nil(t, err)
+		assert.NotEqual(t, entity.Id, "", "DataPool Id can not be empty")
 		break
 	}
 

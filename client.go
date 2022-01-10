@@ -31,6 +31,7 @@ type WebClient struct {
 	Vdisk    *VdiskService
 	Iso      *IsoService
 	Task     *TaskService
+	Event    *EventService
 }
 
 type Error struct {
@@ -52,10 +53,10 @@ func NewClient(apiUrl string, token string, insecure bool) *WebClient {
 		DisableCompression: true,
 		Proxy:              nil,
 	}
-	hclient := &http.Client{Transport: tr}
+	hClient := &http.Client{Transport: tr}
 	client := &WebClient{
 		Token:      token,
-		HTTPClient: hclient,
+		HTTPClient: hClient,
 		BaseURL:    apiUrl,
 	}
 
@@ -67,6 +68,7 @@ func NewClient(apiUrl string, token string, insecure bool) *WebClient {
 	client.Vdisk = &VdiskService{client}
 	client.Iso = &IsoService{client}
 	client.Task = &TaskService{client}
+	client.Event = &EventService{client}
 	return client
 
 }
