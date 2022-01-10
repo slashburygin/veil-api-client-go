@@ -143,6 +143,48 @@ func (d *DomainService) Update(domainID string, description string) (*DomainObje
 	return domain, res, err
 }
 
+func (d *DomainService) Start(domain *DomainObject) (*DomainObject, *http.Response, error) {
+	res, err := d.client.ExecuteRequest("POST", fmt.Sprint(baseDomainUrl, domain.Id, "/start/"), []byte{}, domain)
+	return domain, res, err
+}
+
+func (d *DomainService) Suspend(domain *DomainObject) (*DomainObject, *http.Response, error) {
+	res, err := d.client.ExecuteRequest("POST", fmt.Sprint(baseDomainUrl, domain.Id, "/suspend/"), []byte{}, domain)
+	return domain, res, err
+}
+
+func (d *DomainService) Resume(domain *DomainObject) (*DomainObject, *http.Response, error) {
+	res, err := d.client.ExecuteRequest("POST", fmt.Sprint(baseDomainUrl, domain.Id, "/resume/"), []byte{}, domain)
+	return domain, res, err
+}
+
+func (d *DomainService) Shutdown(domain *DomainObject, force bool) (*DomainObject, *http.Response, error) {
+	body := struct {
+		Force bool `json:"force,omitempty"`
+	}{force}
+	b, _ := json.Marshal(body)
+	res, err := d.client.ExecuteRequest("POST", fmt.Sprint(baseDomainUrl, domain.Id, "/shutdown/"), b, domain)
+	return domain, res, err
+}
+
+func (d *DomainService) Reboot(domain *DomainObject, force bool) (*DomainObject, *http.Response, error) {
+	body := struct {
+		Force bool `json:"force,omitempty"`
+	}{force}
+	b, _ := json.Marshal(body)
+	res, err := d.client.ExecuteRequest("POST", fmt.Sprint(baseDomainUrl, domain.Id, "/reboot/"), b, domain)
+	return domain, res, err
+}
+
+func (d *DomainService) Template(domain *DomainObject, template bool) (*DomainObject, *http.Response, error) {
+	body := struct {
+		Template bool `json:"template"`
+	}{template}
+	b, _ := json.Marshal(body)
+	res, err := d.client.ExecuteRequest("PUT", fmt.Sprint(baseDomainUrl, domain.Id, "/template/"), b, domain)
+	return domain, res, err
+}
+
 func (d *DomainService) Remove(domainID string) (bool, *http.Response, error) {
 
 	res, err := d.client.ExecuteRequest("POST", fmt.Sprint(baseDomainUrl, domainID, "/remove/"), []byte{}, nil)

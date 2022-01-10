@@ -37,3 +37,27 @@ func Test_IsoUpload(t *testing.T) {
 	return
 
 }
+
+func Test_IsoDownload(t *testing.T) {
+	client := NewClient("", "", false)
+	response, _, err := client.Iso.List()
+	assert.Nil(t, err)
+	if len(response.Results) == 0 {
+		t.SkipNow()
+	}
+	for _, v := range response.Results {
+		// Больше 50Мб пропускаем
+		if v.Size >= 50*1024*1024 {
+			continue
+		}
+		iso, _, err := client.Iso.Get(v.Id)
+		assert.Nil(t, err)
+		assert.NotEqual(t, iso.Id, "", "Iso Id can not be empty")
+		iso, _, err = client.Iso.Download(iso)
+		assert.Nil(t, err)
+		break
+	}
+
+	return
+
+}
