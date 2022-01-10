@@ -87,6 +87,11 @@ type DataPoolsResponse struct {
 	Results []DataPoolObjectsList `json:"results,omitempty"`
 }
 
+func (dp *DataPoolObject) Refresh(client *WebClient) (*DataPoolObject, error) {
+	_, err := client.ExecuteRequest("GET", fmt.Sprint(baseDataPoolUrl, dp.Id, "/"), []byte{}, dp)
+	return dp, err
+}
+
 func (d *DataPoolService) List() (*DataPoolsResponse, *http.Response, error) {
 
 	response := new(DataPoolsResponse)

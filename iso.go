@@ -43,6 +43,7 @@ type IsoObject struct {
 	Path        string           `json:"path,omitempty"`
 	Permissions []string         `json:"permissions,omitempty"`
 	UploadUrl   string           `json:"upload_url,omitempty"`
+	DownloadUrl string           `json:"download_url,omitempty"`
 }
 
 type IsosResponse struct {
@@ -101,7 +102,7 @@ func (d *IsoService) Create(DataPoolId string, FileName string) (*IsoObject, *ht
 	if err != nil {
 		return nil, res, err
 	}
-	request, err := http.NewRequest("POST", fmt.Sprint("http://192.168.11.105", iso.UploadUrl), fileBody)
+	request, err := http.NewRequest("POST", fmt.Sprint(GetEnvUrl(), iso.UploadUrl), fileBody)
 	err = writer.Close()
 	if err != nil {
 		return nil, res, err
@@ -114,4 +115,43 @@ func (d *IsoService) Create(DataPoolId string, FileName string) (*IsoObject, *ht
 	}
 	defer response.Body.Close()
 	return iso, response, err
+}
+
+func (d *IsoService) Download(iso *IsoObject) (*IsoObject, *http.Response, error) {
+	// Get download_url
+	res, err := d.client.ExecuteRequest("PUT", fmt.Sprint(baseIsoUrl, iso.Id, "/download/"), []byte{}, iso)
+	if err != nil {
+		return iso, res, err
+	}
+	// Create the file
+	pwd, _ := os.Getwd()
+	filePath := pwd + "/file_data/downloaded_" + iso.FileName
+	out, err := os.Create(filePath)
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(fmt.Sprint(GetEnvUrl(), iso.DownloadUrl))
+	if err != nil {
+		return iso, res, err
+	}
+	defer resp.Body.Close()
+
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		errF := fmt.Errorf("bad status: %s", resp.Status)
+		return iso, res, errF
+	}
+
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return iso, res, err
+	}
+
+	// Delete file
+	err = os.Remove(filePath)
+	if err != nil {
+		return iso, res, err
+	}
+	return iso, res, nil
 }

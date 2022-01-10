@@ -14,6 +14,9 @@ func Test_DataPoolListGet(t *testing.T) {
 		entity, _, err := client.DataPool.Get(v.Id)
 		assert.Nil(t, err)
 		assert.NotEqual(t, entity.Id, "", "DataPool Id can not be empty")
+
+		entity, err = entity.Refresh(client)
+		assert.Nil(t, err)
 		break
 	}
 

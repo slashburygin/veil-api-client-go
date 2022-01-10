@@ -32,6 +32,7 @@ type WebClient struct {
 	Iso      *IsoService
 	Task     *TaskService
 	Event    *EventService
+	User     *UserService
 }
 
 type Error struct {
@@ -69,6 +70,7 @@ func NewClient(apiUrl string, token string, insecure bool) *WebClient {
 	client.Iso = &IsoService{client}
 	client.Task = &TaskService{client}
 	client.Event = &EventService{client}
+	client.User = &UserService{client}
 	return client
 
 }
@@ -82,7 +84,7 @@ func (client *WebClient) ExecuteRequest(method string, url string, body []byte, 
 
 	req.Header.Set("Authorization", "jwt "+client.Token)
 	req.Header.Set("Content-Type", "application/json;charset=utf-8")
-
+	req.Header.Set("Accept-Language", "en")
 	res, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return res, err
@@ -101,7 +103,8 @@ func (client *WebClient) ExecuteRequest(method string, url string, body []byte, 
 			log.Println(err)
 			return res, err
 		} else {
-			errMsg := fmt.Sprintf("not successful status code: %d, detail: %s on url %s %s", res.StatusCode, response.Errors[0].MsgKey, method, url)
+			fmt.Println(reader)
+			errMsg := fmt.Sprintf("status code: %d, detail: %s on url %s %s", res.StatusCode, res.Body, method, url)
 			return res, errors.New(errMsg)
 		}
 
@@ -117,4 +120,10 @@ func (client *WebClient) ExecuteRequest(method string, url string, body []byte, 
 	}
 
 	return res, nil
+}
+
+// Execute user HTTP Request
+func (client *WebClient) Execute(req *http.Request) (*http.Response, error) {
+	res, err := client.HTTPClient.Do(req)
+	return res, err
 }
