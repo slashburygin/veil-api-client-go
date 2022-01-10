@@ -5,14 +5,14 @@ import (
 	"testing"
 )
 
-func Test_NodeListGet(t *testing.T) {
+func Test_Event(t *testing.T) {
 	client := NewClient("", "", false)
-	response, _, err := client.Node.List()
+	response, _, err := client.Event.List()
 	assert.Nil(t, err)
 	for _, v := range response.Results {
-		node, _, err := client.Node.Get(v.Id)
+		task, _, err := client.Event.Get(v.Id)
 		assert.Nil(t, err)
-		assert.NotEqual(t, node.Id, "", "Node Id can not be empty")
+		assert.NotEqual(t, task.Id, "", "Event Id can not be empty")
 
 		break
 	}

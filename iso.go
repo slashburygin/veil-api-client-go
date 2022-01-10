@@ -84,10 +84,10 @@ func (d *IsoService) Create(DataPoolId string, FileName string) (*IsoObject, *ht
 	}
 
 	// Part 2
-	//file, err := os.Open(fmt.Sprint("./file_data/", FileName))
-	file, err := os.Open("/home/slashburygin/GolandProjects/veil-api-go/file_data/test_live.iso")
+	pwd, _ := os.Getwd()
+	file, err := os.Open(pwd + "/file_data/" + FileName)
 	if err != nil {
-		return nil, res, err
+		return iso, res, err
 	}
 	defer file.Close()
 

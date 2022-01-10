@@ -1,27 +1,19 @@
 package veil_api_client_go
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestTask(t *testing.T) {
+func Test_Task(t *testing.T) {
 	client := NewClient("", "", false)
 	response, _, err := client.Task.List()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	assert.Nil(t, err)
 	for _, v := range response.Results {
 		task, _, err := client.Task.Get(v.Id)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		assert.Nil(t, err)
+		assert.NotEqual(t, task.Id, "", "Task Id can not be empty")
 
-		if task.Id == "" {
-			t.Error("Task Id can not be empty")
-			return
-		}
 		break
 	}
 

@@ -3,6 +3,7 @@ package veil_api_client_go
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 const baseDataPoolUrl string = "/api/data-pools/"
@@ -92,6 +93,21 @@ func (d *DataPoolService) List() (*DataPoolsResponse, *http.Response, error) {
 
 	res, err := d.client.ExecuteRequest("GET", baseDataPoolUrl, []byte{}, response)
 
+	return response, res, err
+}
+
+func (d *DataPoolService) ListParams(queryParams map[string]string) (*DataPoolsResponse, *http.Response, error) {
+	listUrl := baseDataPoolUrl
+	if len(queryParams) != 0 {
+		params := url.Values{}
+		for k, v := range queryParams {
+			params.Add(k, v)
+		}
+		listUrl += "?"
+		listUrl += params.Encode()
+	}
+	response := new(DataPoolsResponse)
+	res, err := d.client.ExecuteRequest("GET", listUrl, []byte{}, response)
 	return response, res, err
 }
 
