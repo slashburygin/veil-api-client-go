@@ -20,8 +20,10 @@ func Test_DomainList(t *testing.T) {
 
 func Test_DomainCreate(t *testing.T) {
 	client := NewClient("", "", false)
-
-	domain, _, err := client.Domain.Create(TestDomainName, TestDomainID)
+	config := new(DomainCreateConfig)
+	config.DomainId = TestDomainID
+	config.VerboseName = TestDomainName
+	domain, _, err := client.Domain.Create(*config)
 	assert.Nil(t, err)
 	assert.NotEqual(t, domain.Id, "", "Domain Id can not be empty")
 

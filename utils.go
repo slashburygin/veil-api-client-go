@@ -57,6 +57,15 @@ func NameGenerator(class string) string {
 	return fmt.Sprint(class, "_", StringWithCharset(3, charset), "__TEST")
 }
 
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 type ErrorDict struct {
 	Detail string `json:"detail,omitempty"`
 	Code   string `json:"code,omitempty"`
@@ -86,4 +95,8 @@ type NameResourcePool struct {
 type NameDomain struct {
 	Id          string `json:"id,omitempty"`
 	VerboseName string `json:"verbose_name,omitempty"`
+}
+
+type IdempotencyKeyBase struct {
+	IdempotencyKey string `json:"idempotency_key,omitempty"`
 }
