@@ -1,8 +1,6 @@
 # veil-api-client-go
 
-veil-api-client-go is a Go client library for accessing the [ECP VeiL REST API](https://veil.mashtab.org/docs/latest/api/).
-
-veil-api-client-go, - это клиентская библиотека на Go для доступа к [ECP VeiL REST API](https://veil.mashtab.org/docs/latest/api/).
+veil-api-client-go - это клиентская библиотека на Go для доступа к [ECP VeiL REST API](https://veil.mashtab.org/docs/latest/api/).
 
 ## Использование
 

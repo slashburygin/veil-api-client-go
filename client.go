@@ -15,6 +15,7 @@ import (
 // Client Interface of Client for mocking data receiving in tests
 type Client interface {
 	ExecuteRequest(method, url string, body []byte, object interface{}) (*http.Response, error)
+	Execute(req *http.Request) (*http.Response, error)
 }
 
 type WebClient struct {
