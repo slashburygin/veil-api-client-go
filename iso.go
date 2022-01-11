@@ -108,8 +108,7 @@ func (d *IsoService) Create(DataPoolId string, FileName string) (*IsoObject, *ht
 		return nil, res, err
 	}
 	request.Header.Set("Content-Type", writer.FormDataContentType())
-	client := &http.Client{}
-	response, err := client.Do(request)
+	response, err := d.client.Execute(request)
 	if err != nil {
 		log.Fatal(err)
 	}
