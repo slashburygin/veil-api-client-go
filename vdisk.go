@@ -72,6 +72,34 @@ type VdisksResponse struct {
 	Results []VdiskObjectsList `json:"results,omitempty"`
 }
 
+const TargetBuses = `(virtio|ide|scsi|sata)`
+const CacheTypes = `(default|none|writethrough|writeback|directsync|unsafe)`
+const PreallocationTypes = `(falloc|full|metadata)`
+
+type VdiskCreate struct {
+	VerboseName       string  `json:"verbose_name,omitempty"`
+	Datapool          string  `json:"datapool,omitempty"`
+	Size              float64 `json:"size,omitempty"`
+	Preallocation     bool    `json:"preallocation,omitempty"`
+	VirtualSize       int     `json:"virtual_size,omitempty"`
+	PreallocationType string  `json:"preallocation_type,omitempty"`
+}
+
+type VdiskBusCache struct {
+	TargetBus   string `json:"target_bus,omitempty"`
+	DriverCache string `json:"driver_cache,omitempty"`
+}
+
+type VdiskAttach struct {
+	VdiskBusCache
+	Vdisk string `json:"vdisk,omitempty"`
+}
+
+type VdiskCreateAttach struct {
+	VdiskCreate
+	VdiskBusCache
+}
+
 func (d *VdiskService) List() (*VdisksResponse, *http.Response, error) {
 	response := new(VdisksResponse)
 	res, err := d.client.ExecuteRequest("GET", baseVdiskUrl, []byte{}, response)
@@ -100,19 +128,10 @@ func (d *VdiskService) Get(Id string) (*VdiskObject, *http.Response, error) {
 	return vdisk, res, err
 }
 
-func (d *VdiskService) Create(verboseName string, preallocation bool,
-	datapool string, size float64, asynced bool) (*VdiskObject, *http.Response, error) {
+func (d *VdiskService) Create(config *VdiskCreate, asynced bool) (*VdiskObject, *http.Response, error) {
 
 	vdisk := new(VdiskObject)
-
-	body := struct {
-		VerboseName   string  `json:"verbose_name,omitempty"`
-		Datapool      string  `json:"datapool,omitempty"`
-		Size          float64 `json:"size,omitempty"`
-		Preallocation bool    `json:"preallocation,omitempty"`
-	}{verboseName, datapool, size, preallocation}
-
-	b, _ := json.Marshal(body)
+	b, _ := json.Marshal(config)
 	if !asynced {
 		res, err := d.client.ExecuteRequest("POST", baseVdiskUrl, b, vdisk)
 		return vdisk, res, err

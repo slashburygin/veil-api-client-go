@@ -86,12 +86,49 @@ type DomainsResponse struct {
 	Results []DomainObjectsList `json:"results,omitempty"`
 }
 
-type DomainCreate struct {
-	VerboseName string `json:"verbose_name,omitempty"`
-	Description string `json:"description,omitempty"`
-	Node        string `json:"node,omitempty"`
-	CpuCount    string `json:"cpu_count,omitempty"`
-	MemoryCount int    `json:"memory_count,omitempty"`
+const MachineTypes = `(pc|q35)`
+const CpuModes = `(default|host-model|host-passthrough|custom)`
+const CleanTypes = `(zero|urandom)`
+
+type DomainCreateConfig struct {
+	IdempotencyKeyBase
+	VerboseName  string `json:"verbose_name,omitempty"`
+	DomainId     string `json:"domain_id,omitempty"`
+	Description  string `json:"description,omitempty"`
+	Node         string `json:"node,omitempty"`
+	ResourcePool string `json:"resource_pool,omitempty"`
+	MemoryCount  int    `json:"memory_count,omitempty"`
+	BootType     string `json:"boot_type,omitempty"`
+	CpuCount     int    `json:"cpu_count,omitempty"`
+	CpuCountMax  int    `json:"cpu_count_max,omitempty"`
+	CpuPriority  int    `json:"cpu_priority,omitempty"`
+	CpuMode      string `json:"cpu_mode,omitempty"`
+	CpuModel     string `json:"cpu_model,omitempty"`
+	OsType       string `json:"os_type,omitempty"`
+	OsVersion    string `json:"os_version,omitempty"`
+	Machine      string `json:"machine,omitempty"`
+}
+
+type DomainMultiCreateConfig struct {
+	DomainCreateConfig
+	Safety             bool                `json:"safety,omitempty"`
+	StartOnBoot        bool                `json:"start_on_boot,omitempty"`
+	CleanType          string              `json:"clean_type,omitempty"`
+	CleanCount         int                 `json:"clean_count,omitempty"`
+	MemoryMinGuarantee int                 `json:"memory_min_guarantee,omitempty"`
+	MemoryShares       int                 `json:"memory_shares,omitempty"`
+	MemoryLimit        int                 `json:"memory_limit,omitempty"`
+	Vdisks             []VdiskAttach       `json:"vdisks,omitempty"`
+	Isos               []IsoAttach         `json:"isos,omitempty"`
+	NewVdisks          []VdiskCreateAttach `json:"new_vdisks,omitempty"`
+	NewIsos            []IsoSoftAttach     `json:"new_isos,omitempty"`
+	StartOn            bool                `json:"start_on,omitempty"`
+	RemoteAccess       bool                `json:"remote_access,omitempty"`
+	Parent             string              `json:"parent,omitempty"`
+	Datapool           string              `json:"datapool,omitempty"`
+	Thin               bool                `json:"thin,omitempty"`
+	Clone              bool                `json:"clone,omitempty"`
+	Template           string              `json:"template,omitempty"`
 }
 
 func (d *DomainService) List() (*DomainsResponse, *http.Response, error) {
@@ -103,33 +140,31 @@ func (d *DomainService) List() (*DomainsResponse, *http.Response, error) {
 	return response, res, err
 }
 
-func (d *DomainService) Create(verboseName string, domainID string) (*DomainObject, *http.Response, error) {
-
+func (d *DomainService) Create(config DomainCreateConfig) (*DomainObject, *http.Response, error) {
 	domain := new(DomainObject)
-
-	body := struct {
-		VerboseName string `json:"verbose_name,omitempty"`
-		DomainId    string `json:"domain_id,omitempty"`
-		MemoryCount int    `json:"memory_count,omitempty"`
-	}{verboseName, domainID, 50}
-
-	b, _ := json.Marshal(body)
+	b, _ := json.Marshal(config)
 	res, err := d.client.ExecuteRequest("POST", baseDomainUrl, b, domain)
+	return domain, res, err
+}
 
+func (d *DomainService) MultiCreate(config DomainMultiCreateConfig) (*DomainObject, *http.Response, error) {
+
+	b, _ := json.Marshal(config)
+	asyncResp := new(AsyncResponse)
+	res, err := d.client.ExecuteRequest("PUT", fmt.Sprint(baseDomainUrl, "multi-create-domain/?async=1"), b, asyncResp)
+	WaitTaskReady(asyncResp.Task.Id, true, 0, true)
+	domain := new(DomainObject)
+	res, err = d.client.ExecuteRequest("GET", fmt.Sprint(baseDomainUrl, asyncResp.Entity, "/"), []byte{}, domain)
 	return domain, res, err
 }
 
 func (d *DomainService) Get(domainID string) (*DomainObject, *http.Response, error) {
-
 	domain := new(DomainObject)
-
 	res, err := d.client.ExecuteRequest("GET", fmt.Sprint(baseDomainUrl, domainID, "/"), []byte{}, domain)
-
 	return domain, res, err
 }
 
 func (d *DomainService) Update(domainID string, description string) (*DomainObject, *http.Response, error) {
-
 	domain := new(DomainObject)
 
 	body := struct {

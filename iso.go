@@ -51,6 +51,15 @@ type IsosResponse struct {
 	Results []IsoObjectsList `json:"results,omitempty"`
 }
 
+type IsoSoftAttach struct {
+	Iso string `json:"iso"`
+}
+
+type IsoAttach struct {
+	IsoSoftAttach
+	Cdrom string `json:"cdrom"`
+}
+
 func (d *IsoService) List() (*IsosResponse, *http.Response, error) {
 
 	response := new(IsosResponse)
