@@ -8,6 +8,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 )
@@ -66,6 +67,21 @@ func (d *IsoService) List() (*IsosResponse, *http.Response, error) {
 
 	res, err := d.client.ExecuteRequest("GET", baseIsoUrl, []byte{}, response)
 
+	return response, res, err
+}
+
+func (d *IsoService) ListParams(queryParams map[string]string) (*IsosResponse, *http.Response, error) {
+	listUrl := baseIsoUrl
+	if len(queryParams) != 0 {
+		params := url.Values{}
+		for k, v := range queryParams {
+			params.Add(k, v)
+		}
+		listUrl += "?"
+		listUrl += params.Encode()
+	}
+	response := new(IsosResponse)
+	res, err := d.client.ExecuteRequest("GET", listUrl, []byte{}, response)
 	return response, res, err
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 const baseDomainUrl string = "/api/domains/"
@@ -90,6 +91,36 @@ const MachineTypes = `(pc|q35)`
 const CpuModes = `(default|host-model|host-passthrough|custom)`
 const CleanTypes = `(zero|urandom)`
 
+type SshInject struct {
+	CreateUser bool   `json:"create_user,omitempty"`
+	SshUser    string `json:"ssh_user,omitempty"`
+	SshKey     string `json:"ssh_key,omitempty"`
+}
+
+type CloudConfig struct {
+	UserData string `json:"user_data,omitempty"`
+	MetaData string `json:"meta_data,omitempty"`
+}
+
+type CpuTopology struct {
+	CpuCount    int `json:"cpu_count,omitempty"`     // Group 1
+	CpuCountMax int `json:"cpu_count_max,omitempty"` // Group 1
+
+	CpuSockets int `json:"cpu_sockets,omitempty"` // Group 2
+	CpuCores   int `json:"cpu_cores,omitempty"`   // Group 2
+	CpuThreads int `json:"cpu_threads,omitempty"` // Group 2
+
+	CpuMap map[string]string `json:"cpu_map,omitempty"` // Group 4
+
+	CpuMode  string `json:"cpu_mode,omitempty"`  // Group 5
+	CpuModel string `json:"cpu_model,omitempty"` // Group 5
+
+	CpuPriority         int      `json:"cpu_priority,omitempty"`          // Group 6
+	CpuShares           int      `json:"cpu_shares,omitempty"`            // Group 6
+	CpuMinGuarantee     int      `json:"cpu_min_guarantee,omitempty"`     // Group 6
+	CpuFeaturesRequired []string `json:"cpu_features_required,omitempty"` // Group 6
+}
+
 type DomainCreateConfig struct {
 	IdempotencyKeyBase
 	VerboseName  string `json:"verbose_name,omitempty"`
@@ -125,10 +156,13 @@ type DomainMultiCreateConfig struct {
 	StartOn            bool                `json:"start_on,omitempty"`
 	RemoteAccess       bool                `json:"remote_access,omitempty"`
 	Parent             string              `json:"parent,omitempty"`
-	Datapool           string              `json:"datapool,omitempty"`
 	Thin               bool                `json:"thin,omitempty"`
 	Clone              bool                `json:"clone,omitempty"`
 	Template           string              `json:"template,omitempty"`
+	CpuTopology        []CpuTopology       `json:"cpu_topology,omitempty"`
+	SshInject          *SshInject          `json:"ssh_inject,omitempty"`
+	CloudInit          bool                `json:"cloud_init,omitempty"`
+	CloudInitConfig    *CloudConfig        `json:"cloud_init_config,omitempty"`
 }
 
 func (d *DomainService) List() (*DomainsResponse, *http.Response, error) {
@@ -140,6 +174,21 @@ func (d *DomainService) List() (*DomainsResponse, *http.Response, error) {
 	return response, res, err
 }
 
+func (d *DomainService) ListParams(queryParams map[string]string) (*DomainsResponse, *http.Response, error) {
+	listUrl := baseDomainUrl
+	if len(queryParams) != 0 {
+		params := url.Values{}
+		for k, v := range queryParams {
+			params.Add(k, v)
+		}
+		listUrl += "?"
+		listUrl += params.Encode()
+	}
+	response := new(DomainsResponse)
+	res, err := d.client.ExecuteRequest("GET", listUrl, []byte{}, response)
+	return response, res, err
+}
+
 func (d *DomainService) Create(config DomainCreateConfig) (*DomainObject, *http.Response, error) {
 	domain := new(DomainObject)
 	b, _ := json.Marshal(config)
@@ -148,12 +197,15 @@ func (d *DomainService) Create(config DomainCreateConfig) (*DomainObject, *http.
 }
 
 func (d *DomainService) MultiCreate(config DomainMultiCreateConfig) (*DomainObject, *http.Response, error) {
-
-	b, _ := json.Marshal(config)
-	asyncResp := new(AsyncResponse)
-	res, err := d.client.ExecuteRequest("PUT", fmt.Sprint(baseDomainUrl, "multi-create-domain/?async=1"), b, asyncResp)
-	WaitTaskReady(asyncResp.Task.Id, true, 0, true)
 	domain := new(DomainObject)
+	b, _ := json.Marshal(config)
+	fmt.Println(config.SshInject)
+	asyncResp := new(AsyncResponse)
+	res, err := d.client.ExecuteRequest("POST", fmt.Sprint(baseDomainUrl, "multi-create-domain/?async=1"), b, asyncResp)
+	if err != nil {
+		return domain, res, err
+	}
+	WaitTaskReady(asyncResp.Task.Id, true, 0, true)
 	res, err = d.client.ExecuteRequest("GET", fmt.Sprint(baseDomainUrl, asyncResp.Entity, "/"), []byte{}, domain)
 	return domain, res, err
 }
